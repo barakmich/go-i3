@@ -15,9 +15,7 @@ var config []goi3.Generator = []goi3.Generator{
 	//},
 	goi3.IFaceGenerator{"wlan0"},
 	goi3.IFaceGenerator{"lo"},
-	goi3.NewConstantSparkGenerator(
-		0, 100, 10, goi3.NewCPUTick(),
-	),
+	goi3.NewCPUGenerator(goi3.Color{64, 128, 255}),
 	goi3.TimeGenerator{
 		"2006-01-02 15:04:05",
 		goi3.Color{255, 255, 255},

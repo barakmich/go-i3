@@ -10,18 +10,15 @@ type SparkGenerator struct {
 	fun               IntTick
 	data              []int
 	dynamic           bool
-	PrintBounds       bool
-	PrintCurrent      bool
 }
 
 func NewConstantSparkGenerator(min, max, history int, fun IntTick) *SparkGenerator {
 	return &SparkGenerator{
-		min:          min,
-		max:          max,
-		history:      history,
-		fun:          fun,
-		data:         make([]int, history),
-		PrintCurrent: true,
+		min:     min,
+		max:     max,
+		history: history,
+		fun:     fun,
+		data:    make([]int, history),
 	}
 }
 
@@ -68,16 +65,31 @@ func (c *SparkGenerator) MakeBlock(ctx Context) (Block, error) {
 		}
 	}
 	sparkstring := string(out)
-	if c.PrintBounds {
-		sparkstring = fmt.Sprintf("%s %d %d", sparkstring, c.min, c.max)
-	}
-	if c.PrintCurrent {
-		sparkstring = fmt.Sprintf("%s %d", sparkstring, newint)
-	}
 	return Block{
 		FullText: sparkstring,
-		Color:    Color{64, 128, 255},
 	}, nil
+}
+
+type CPUGenerator struct {
+	spark *SparkGenerator
+	color Color
+}
+
+func NewCPUGenerator(color Color) *CPUGenerator {
+	return &CPUGenerator{
+		spark: NewConstantSparkGenerator(0, 99, 10, NewCPUTick()),
+		color: color,
+	}
+}
+
+func (cpu *CPUGenerator) MakeBlock(ctx Context) (Block, error) {
+	blk, err := cpu.spark.MakeBlock(ctx)
+	if err != nil {
+		return blk, err
+	}
+	blk.Color = cpu.color
+	blk.FullText = fmt.Sprintf("%s %02d", blk.FullText, cpu.spark.data[len(cpu.spark.data)-1])
+	return blk, nil
 }
 
 type CountTick struct {
