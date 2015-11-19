@@ -1,25 +1,58 @@
 package goi3
 
+import "fmt"
+
 // Len = 8
 var spark = []rune("▁▂▃▄▅▆▇█")
 
-type ConstantSparkGenerator struct {
+type SparkGenerator struct {
 	min, max, history int
 	fun               IntTick
 	data              []int
+	dynamic           bool
+	PrintBounds       bool
+	PrintCurrent      bool
 }
 
-func NewConstantSparkGenerator(min, max, history int, fun IntTick) *ConstantSparkGenerator {
-	return &ConstantSparkGenerator{
-		min, max, history, fun, make([]int, history),
+func NewConstantSparkGenerator(min, max, history int, fun IntTick) *SparkGenerator {
+	return &SparkGenerator{
+		min:          min,
+		max:          max,
+		history:      history,
+		fun:          fun,
+		data:         make([]int, history),
+		PrintCurrent: true,
 	}
 }
 
-func (c *ConstantSparkGenerator) MakeBlock(ctx Context) (Block, error) {
+func NewDynamicSparkGenerator(history int, fun IntTick) *SparkGenerator {
+	return &SparkGenerator{
+		min:     0,
+		max:     0,
+		history: history,
+		fun:     fun,
+		data:    make([]int, history),
+		dynamic: true,
+	}
+}
+
+func (c *SparkGenerator) MakeBlock(ctx Context) (Block, error) {
 	newint := c.fun.Tick(ctx)
 	c.data = append(c.data, newint)
 	c.data = c.data[1:]
 	var out []rune
+	if c.dynamic {
+		c.max = c.data[0]
+		c.min = c.data[0]
+		for _, x := range c.data {
+			if x > c.max {
+				c.max = x
+			}
+			if x < c.min {
+				c.min = x
+			}
+		}
+	}
 	segment := ((c.max - c.min) << 8) / 7
 	for _, i := range c.data {
 		if i < c.min {
@@ -34,9 +67,16 @@ func (c *ConstantSparkGenerator) MakeBlock(ctx Context) (Block, error) {
 			out = append(out, spark[f])
 		}
 	}
+	sparkstring := string(out)
+	if c.PrintBounds {
+		sparkstring = fmt.Sprintf("%s %d %d", sparkstring, c.min, c.max)
+	}
+	if c.PrintCurrent {
+		sparkstring = fmt.Sprintf("%s %d", sparkstring, newint)
+	}
 	return Block{
-		FullText: string(out),
-		Color:    Color{0, 0, 255},
+		FullText: sparkstring,
+		Color:    Color{64, 128, 255},
 	}, nil
 }
 

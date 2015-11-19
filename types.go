@@ -3,9 +3,37 @@ package goi3
 import "fmt"
 
 type Block struct {
-	FullText  string `json:"full_text,omitempty"`
-	ShortText string `json:"short_text,omitempty"`
-	Color     Color  `json:"color,omitempty"`
+	FullText  string    `json:"full_text,omitempty"`
+	ShortText string    `json:"short_text,omitempty"`
+	Color     Color     `json:"color,omitempty"`
+	MinWidth  int       `json:"min_width,omitempty"`
+	Align     Alignment `json:"align,omitempty"`
+	Name      string    `json:"name,omitempty"`
+	Instance  string    `json:"instance,omitempty"`
+}
+
+type Alignment int
+
+const (
+	AlignLeft Alignment = iota
+	AlignRight
+	AlignCenter
+)
+
+func (a Alignment) String() string {
+	switch a {
+	case AlignLeft:
+		return "left"
+	case AlignRight:
+		return "right"
+	case AlignCenter:
+		return "center"
+	}
+	panic("unknown alignment")
+}
+
+func (a Alignment) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprint("\"", a, "\"")), nil
 }
 
 type IntTick interface {

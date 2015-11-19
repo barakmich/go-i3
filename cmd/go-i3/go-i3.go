@@ -9,13 +9,19 @@ import (
 )
 
 var config []goi3.Generator = []goi3.Generator{
-	goi3.StaticGenerator{
-		"Baba Booey",
-		goi3.Color{0, 255, 0},
-	},
+	//goi3.StaticGenerator{
+	//"Baba Booey 😁",
+	//goi3.Color{0, 255, 0},
+	//},
+	goi3.IFaceGenerator{"wlan0"},
+	goi3.IFaceGenerator{"lo"},
 	goi3.NewConstantSparkGenerator(
-		0, 20, 10, &goi3.CountTick{},
+		0, 100, 10, goi3.NewCPUTick(),
 	),
+	goi3.TimeGenerator{
+		"2006-01-02 15:04:05",
+		goi3.Color{255, 255, 255},
+	},
 }
 
 func main() {
