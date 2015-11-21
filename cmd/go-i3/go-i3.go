@@ -13,7 +13,7 @@ var config []goi3.Generator = []goi3.Generator{
 	//"Baba Booey 😁",
 	//goi3.Color{0, 255, 0},
 	//},
-	goi3.IFaceGenerator{"wlan0"},
+	goi3.NewWifiGenerator("wlan0"),
 	goi3.IFaceGenerator{"lo"},
 	goi3.NewCPUGenerator(goi3.Color{64, 128, 255}),
 	goi3.TimeGenerator{

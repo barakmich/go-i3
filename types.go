@@ -10,6 +10,7 @@ type Block struct {
 	Align     Alignment `json:"align,omitempty"`
 	Name      string    `json:"name,omitempty"`
 	Instance  string    `json:"instance,omitempty"`
+	metadata  map[string]string
 }
 
 type Alignment int
@@ -40,7 +41,9 @@ type IntTick interface {
 	Tick(ctx Context) int
 }
 
-type Context struct{}
+type Context struct {
+	NetworkIsConnected bool
+}
 
 type Generator interface {
 	MakeBlock(ctx Context) (Block, error)
