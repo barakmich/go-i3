@@ -1,10 +1,15 @@
 package goi3
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -99,4 +104,52 @@ func (w WifiGenerator) MakeBlock(ctx Context) (Block, error) {
 	}
 	blk.FullText = fmt.Sprintf("%s @ %s", blk.FullText, ssid)
 	return blk, nil
+}
+
+type PowerGenerator struct {
+	ID string
+}
+
+func stringFile(path string) (string, error) {
+	f, err := os.Open(path)
+	defer f.Close()
+	if err != nil {
+		return "", err
+	}
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+	b = bytes.TrimRight(b, "\n")
+	return string(b), nil
+}
+
+func (p PowerGenerator) MakeBlock(_ Context) (Block, error) {
+	path := filepath.Join("/sys/class/power_supply", p.ID)
+	out, err := stringFile(filepath.Join(path, "status"))
+	if err != nil {
+		return Block{}, err
+	}
+	cur, err := stringFile(filepath.Join(path, "charge_now"))
+	if err != nil {
+		return Block{}, err
+	}
+	full, err := stringFile(filepath.Join(path, "charge_full"))
+	if err != nil {
+		return Block{}, err
+	}
+	c, err := strconv.Atoi(cur)
+	if err != nil {
+		return Block{}, err
+	}
+	f, err := strconv.Atoi(full)
+	if err != nil {
+		return Block{}, err
+	}
+	percent := (c * 100) / f
+	out = fmt.Sprintf("%s %d%%", out, percent)
+	return Block{
+		FullText: out,
+		Color:    Color{255, 255, 0},
+	}, nil
 }
